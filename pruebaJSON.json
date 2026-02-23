@@ -1,4 +1,14 @@
-{   "nombre": "LVY",
+{   "Nombre": "LVY",
     "Edad": 21,
-    "Estudiante": true
+    "Estudiante": true,
+    "Hobbies": ["Costura", "Lectura"],
+    "Mascotas": {
+        "Mascota1": {
+            "Nombre": "Aire",
+            "Tipo": "Canario"},
+        "Mascota2": {
+            "Nombre": "Cora",
+            "Tipo": "Perro"
+        }
+    }
 }
