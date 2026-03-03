@@ -144,14 +144,33 @@ app.put(BASE_URL_API + "/spice-stats/:index", (req, res) => {
   const index = parseInt(req.params.index);
   const updatedSpice = req.body;
 
+  // Validar índice
   if (isNaN(index) || index < 0 || index >= listaPicante.length) {
     return res.status(404).send({ error: "Índice no válido" });
   }
 
+  // Validar cuerpo
   if (!updatedSpice || Object.keys(updatedSpice).length === 0) {
     return res.status(400).send({ error: "El cuerpo de la petición está vacío o es inválido" });
   }
 
+  // Lista de campos obligatorios según tu CSV normalizado
+  const requiredFields = [
+    "domain_code", "domain", "area_code", "area",
+    "element_code", "item_code", "item",
+    "year", "unit", "import", "export",
+    "production", "consumption"
+  ];
+
+  const missing = requiredFields.filter(f => !(f in updatedSpice));
+  if (missing.length > 0) {
+    return res.status(400).json({
+      error: "Faltan campos obligatorios para un PUT",
+      missing
+    });
+  }
+
+  // Reemplazar el elemento completo
   listaPicante[index] = updatedSpice;
 
   res.status(200).send({
@@ -159,6 +178,7 @@ app.put(BASE_URL_API + "/spice-stats/:index", (req, res) => {
     data: updatedSpice
   });
 });
+
 
 // ============================================================================
 
