@@ -96,12 +96,47 @@ app.get(BASE_URL_API + "/spice-stats/loadInitialData", async (req, res) => {
 
 // ============================================================================
 
-app.post(BASE_URL_API+"/spice-stats", (req, res) =>{
-  let newSpice = req.body;
-  console.log(`Data is: ${JSON.stringify(newSpice, null, 2)}`)
+app.post(BASE_URL_API + "/spice-stats", (req, res) => {
+  const newSpice = req.body;
+
+  // Lista de campos obligatorios según tu CSV normalizado
+  const requiredFields = [
+    "domain_code", "domain", "area_code", "area",
+    "element_code", "item_code", "item",
+    "year", "unit", "import", "export",
+    "production", "consumption"
+  ];
+
+  // Validar campos obligatorios
+  const missing = requiredFields.filter(f => !(f in newSpice));
+  if (missing.length > 0) {
+    return res.status(400).json({
+      error: "Faltan campos obligatorios",
+      missing
+    });
+  }
+
+  // Evitar duplicados: por ejemplo, misma combinación área + item + año
+  const exists = listaPicante.some(e =>
+    e.area === newSpice.area &&
+    e.item === newSpice.item &&
+    e.year === newSpice.year
+  );
+
+  if (exists) {
+    return res.status(409).json({
+      error: "El recurso ya existe (duplicado)"
+    });
+  }
+
+  // Insertar en la lista
   listaPicante.push(newSpice);
-  res.sendStatus(201, "CREATED");
-})
+
+  return res.status(201).json({
+    message: "Recurso creado correctamente",
+    data: newSpice
+  });
+});
 
 // ============================================================================
 
