@@ -216,6 +216,11 @@ app.post(BASE_URL_API + "/spice-stats/:index", (req, res) => {
   });
 });
 
+app.put(BASE_URL_API+"/spice-stats", (req, res) => {
+  res.status(405).send({
+    message: "Método no permitido"
+  })
+})
 
 // ============================================================================
 // ============================================================================
