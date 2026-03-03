@@ -1,5 +1,7 @@
 let cool = require("cool-ascii-faces");
 let express = require("express");
+let bodyParser = require('body-parser');
+let BASE_URL_API = "/api/v1";
 let PORT = process.env.PORT || 3000;
 
 // console.log(cool());
@@ -10,6 +12,7 @@ const app = express();
 // ============================================================================
 
 app.use("/about",express.static("./README.md"));
+app.use(bodyParser.json());
 
 
 app.get('/cool', (req, res) => {
@@ -29,25 +32,297 @@ app.get('/samples/AAP', (req, res) => {
             </h1></body></html>`);
 });
 
+// ============================================================================
 
+let FJGM = require("./samples/FJGM/index.js");
 
-let BASE_URL_API = "/api/v1";
-
-let picantes = [
-  { domain_code: "TCL", domain: "Crops and livestock products", area_code_m49: 4, area: "Afghanistan", element_code: 5610, item_code_cpc: 1654, item: "Anise, badian, coriander, cumin, caraway, fennel and juniper berries, raw", year: 2014, unit: "t", import: 283.85, export: 21099, production: 21500, consumption: 684.85 },
-  { domain_code: "TCL", domain: "Crops and livestock products", area_code_m49: 4, area: "Afghanistan", element_code: 5610, item_code_cpc: 1654, item: "Anise, badian, coriander, cumin, caraway, fennel and juniper berries, raw", year: 2015, unit: "t", import: 1000.16, export: 17340, production: 18000, consumption: 1660.16 }
-];
-
-app.get(BASE_URL_API+"/spice-stats", (req, res) =>{
-  res.send(JSON.stringify(picantes, null, 2));
-  console.log(`Data to be sent: ${JSON.stringify(picantes, null)}`)
+app.get('/samples/FJGM', (req, res) => {
+  res.send(`<html><body><h1>
+            ${FJGM()}
+            </h1></body></html>`);
 });
 
+// ============================================================================
+
+let PMG = require("./samples/PMG/index.js");
+
+app.get('/samples/PMG', async (req, res) => {
+  const resultado = await PMG(); 
+  
+  // Ejemplo: mostramos la media si hubo éxito, o el mensaje si falló
+  res.send(`<html><body><h1>
+            ${resultado.exito ? `La media es: ${resultado.media}` : resultado.mensaje}
+            </h1></body></html>`);
+});
+
+
+
+// ============================================================================
+// ============================================================================
+
+
+let picantes = require('./samples/AAP/lectorCSV.js');
+let listaPicante =[];
+
+app.get(BASE_URL_API+"/spice-stats", (req, res) =>{
+  res.send(JSON.stringify(listaPicante, null, 2));
+  console.log(`Data to be sent: ${JSON.stringify(listaPicante, null)}`)
+
+});
+
+// ============================================================================
+
+app.get(BASE_URL_API + "/spice-stats/loadInitialData", async (req, res) => {
+  try {
+    if (listaPicante.length > 0) {
+      return res.status(409).send({ 
+        message: "Los datos ya estaban cargados", 
+        loaded: listaPicante.length }); 
+    }
+    const datos = await picantes();   // leer CSV
+    listaPicante = datos.slice(0, 10); // guardar solo 10 registros
+
+    res.status(201).send({
+      message: "Datos iniciales cargados correctamente",
+      loaded: listaPicante.length
+    });
+
+    console.log("Datos cargados:", listaPicante.length);
+  } catch (error) {
+    console.error("Error al cargar CSV:", error);
+    res.status(500).send({ error: "No se pudieron cargar los datos" });
+  }
+});
+
+// ============================================================================
+
 app.post(BASE_URL_API+"/spice-stats", (req, res) =>{
-  let newPicante = req.body;
-  console.log(`Data is: ${JSON.stringify(newPicante, null, 2)}`)
-  picantes.push(newPicante);
+  let newSpice = req.body;
+  console.log(`Data is: ${JSON.stringify(newSpice, null, 2)}`)
+  listaPicante.push(newSpice);
+  res.sendStatus(201, "CREATED");
 })
+
+// ============================================================================
+
+app.put(BASE_URL_API + "/spice-stats/:index", (req, res) => {
+  const index = parseInt(req.params.index);
+  const updatedSpice = req.body;
+
+  if (isNaN(index) || index < 0 || index >= listaPicante.length) {
+    return res.status(404).send({ error: "Índice no válido" });
+  }
+
+  if (!updatedSpice || Object.keys(updatedSpice).length === 0) {
+    return res.status(400).send({ error: "El cuerpo de la petición está vacío o es inválido" });
+  }
+
+  listaPicante[index] = updatedSpice;
+
+  res.status(200).send({
+    message: "Elemento actualizado correctamente",
+    data: updatedSpice
+  });
+});
+
+// ============================================================================
+
+app.delete(BASE_URL_API + "/spice-stats", (req, res) => {
+  if (listaPicante.length === 0) {
+    return res.status(404).send({
+      message: "La lista ya está vacía"
+    });
+  }
+
+  listaPicante = []; // vaciar lista
+
+  res.status(200).send({
+    message: "Todos los elementos han sido eliminados",
+    deleted: true
+  });
+
+  console.log("Lista vaciada");
+});
+
+app.post(BASE_URL_API + "/spice-stats/:index", (req, res) => {
+  res.status(405).send({
+    message: "Método no permitido"
+  });
+});
+
+
+// ============================================================================
+// ============================================================================
+
+let wool = require('./samples/FJGM/lectorCSV.js');
+let listaWool = [];
+
+app.get(BASE_URL_API+"/wool-stats", async (req, res) =>{
+  res.send(JSON.stringify(listaWool, null, 2));
+  console.log(`Data to be sent: ${JSON.stringify(listaWool, null)}`)
+});
+
+app.get(BASE_URL_API + "/wool-stats/loadInitialData", async (req, res) => {
+      if (listaWool.length > 0) {
+      return res.status(409).send({ 
+        message: "Los datos ya estaban cargados", 
+        loaded: listaWool.length }); 
+    }
+  try {
+    const datos = await wool();   // leer CSV
+    listaWool = datos.slice(0, 10); // guardar solo 10 registros
+
+    res.status(201).send({
+      message: "Datos iniciales cargados correctamente",
+      loaded: listaWool.length
+    });
+
+    console.log("Datos cargados:", listaWool.length);
+  } catch (error) {
+    console.error("Error al cargar CSV:", error);
+    res.status(500).send({ error: "No se pudieron cargar los datos" });
+  }
+});
+
+
+app.post(BASE_URL_API+"/wool-stats", (req, res) =>{
+  let newWool = req.body;
+  console.log(`Data is: ${JSON.stringify(newWool, null, 2)}`)
+  listaWool.push(newWool);
+  res.sendStatus(201, "CREATED");
+})
+
+
+app.delete(BASE_URL_API + "/wool-stats", (req, res) => {
+  if (listaWool.length === 0) {
+    return res.status(404).send({
+      message: "La lista ya está vacía"
+    });
+  }
+
+  listaWool = []; // vaciar lista
+
+  res.status(200).send({
+    message: "Todos los elementos han sido eliminados",
+    deleted: true
+  });
+
+  console.log("Lista vaciada");
+});
+
+app.put(BASE_URL_API + "/wool-stats/:index", (req, res) => {
+  const index = parseInt(req.params.index);
+  const updatedWool = req.body;
+
+  if (isNaN(index) || index < 0 || index >= listaWool.length) {
+    return res.status(404).send({ error: "Índice no válido" });
+  }
+
+  if (!updatedWool || Object.keys(updatedWool).length === 0) {
+    return res.status(400).send({ error: "El cuerpo de la petición está vacío o es inválido" });
+  }
+
+  listaWool[index] = updatedWool;
+
+  res.status(200).send({
+    message: "Elemento actualizado correctamente",
+    data: updatedWool
+  });
+});
+
+app.post(BASE_URL_API + "/wool-stats/:index", (req, res) => {
+  res.status(405).send({
+    message: "Método no autorizado"
+  });
+});
+
+
+// ============================================================================
+// ============================================================================
+
+
+
+
+let coffee = require('./samples/PMG/lectorCSV.js');
+let listaCoffee = [];
+
+app.get(BASE_URL_API+"/coffee-stats", async (req, res) =>{
+  res.send(JSON.stringify(listaCoffee, null, 2));
+  console.log(`Data to be sent: ${JSON.stringify(listaCoffee, null)}`)
+});
+
+app.get(BASE_URL_API + "/coffee-stats/loadInitialData", async (req, res) => {
+      if (listaCoffee.length > 0) {
+      return res.status(409).send({ 
+        message: "Los datos ya estaban cargados", 
+        loaded: listaCoffee.length }); 
+    }
+  try {
+    const datos = await coffee();   // leer CSV
+    listaCoffee = datos.slice(0, 10); // guardar solo 10 registros
+
+    res.status(201).send({
+      message: "Datos iniciales cargados correctamente",
+      loaded: listaCoffee.length
+    });
+
+    console.log("Datos cargados:", listaCoffee.length);
+  } catch (error) {
+    console.error("Error al cargar CSV:", error);
+    res.status(500).send({ error: "No se pudieron cargar los datos" });
+  }
+});
+
+
+app.post(BASE_URL_API+"/coffee-stats", (req, res) =>{
+  let newCoffee = req.body;
+  console.log(`Data is: ${JSON.stringify(newCoffee, null, 2)}`)
+  listaCoffee.push(newCoffee);
+  res.sendStatus(201, "CREATED");
+})
+
+app.delete(BASE_URL_API + "/coffee-stats", (req, res) => {
+  if (listaCoffee.length === 0) {
+    return res.status(404).send({
+      message: "La lista ya está vacía"
+    });
+  }
+
+  listaCoffee = []; // vaciar lista
+
+  res.status(200).send({
+    message: "Todos los elementos han sido eliminados",
+    deleted: true
+  });
+
+  console.log("Lista vaciada");
+});
+
+app.put(BASE_URL_API + "/coffee-stats/:index", (req, res) => {
+  const index = parseInt(req.params.index);
+  const updatedCoffee = req.body;
+
+  if (isNaN(index) || index < 0 || index >= listaCoffee.length) {
+    return res.status(404).send({ error: "Índice no válido" });
+  }
+
+  if (!updatedCoffee || Object.keys(updatedCoffee).length === 0) {
+    return res.status(400).send({ error: "El cuerpo de la petición está vacío o es inválido" });
+  }
+
+  listaCoffee[index] = updatedCoffee;
+
+  res.status(200).send({
+    message: "Elemento actualizado correctamente",
+    data: updatedCoffee
+  });
+});
+
+app.post(BASE_URL_API + "/coffee-stats/:index", (req, res) => {
+  res.status(405).send({
+    message: "Método no autorizado"
+  });
+});
 
 
 // ============================================================================
@@ -56,5 +331,5 @@ app.post(BASE_URL_API+"/spice-stats", (req, res) =>{
 
 
 app.listen(PORT, () => {
-  console.log(`Server is running on localhost:${PORT}`);
+  console.log(`Server is running on ${PORT}`);
 })
