@@ -6,7 +6,7 @@ function normalizarClave(clave) {
     .trim()
     .toLowerCase()
     .replace(/\s+/g, "_")       // espacios → _
-    // .replace(/[()]/g, "")       // quitar paréntesis
+    .replace(/[()]/g, "")       // quitar paréntesis
     .replace(/[^a-z0-9_]/g, ""); // quitar caracteres raros
 }
 
