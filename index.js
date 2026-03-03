@@ -66,8 +66,7 @@ let listaPicante =[];
 
 app.get(BASE_URL_API+"/spice-stats", (req, res) =>{
   res.send(JSON.stringify(listaPicante, null, 2));
-  console.log(`Data to be sent: ${JSON.stringify(listaPicante, null)}`)
-
+  console.log(`Data to be sent: ${JSON.stringify(listaPicante, null)}`);
 });
 
 // ============================================================================
