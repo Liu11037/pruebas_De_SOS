@@ -170,11 +170,10 @@ app.put(BASE_URL_API + "/spice-stats/:index", (req, res) => {
     });
   }
 
-    const exists = listaPicante.some(e =>
-    e.area === newSpice.area &&
-    e.item === newSpice.item &&
-    e.year === newSpice.year
-  );
+  const exists = listaPicante.some(e =>
+    e.area === updatedSpice.area &&
+    e.item === updatedSpice.item &&
+updatedSpice  );
 
   if (exists) {
     return res.status(409).json({
