@@ -170,6 +170,18 @@ app.put(BASE_URL_API + "/spice-stats/:index", (req, res) => {
     });
   }
 
+    const exists = listaPicante.some(e =>
+    e.area === newSpice.area &&
+    e.item === newSpice.item &&
+    e.year === newSpice.year
+  );
+
+  if (exists) {
+    return res.status(409).json({
+      error: "El recurso ya existe (duplicado)"
+    });
+  }
+
   // Reemplazar el elemento completo
   listaPicante[index] = updatedSpice;
 
