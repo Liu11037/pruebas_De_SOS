@@ -1,6 +1,9 @@
 let cool = require("cool-ascii-faces");
-let express = require("express");
-let bodyParser = require('body-parser');
+// let express = require("express");
+import express from 'express';  // 06/03/2026
+// let bodyParser = require('body-parser');
+import bodyParser from 'body-parser'
+import { loadBackEnd } from './src/back/index.js';
 let BASE_URL_API = "/api/v1";
 let PORT = process.env.PORT || 3000;
 
@@ -11,8 +14,9 @@ const app = express();
 // ============================================================================
 // ============================================================================
 
-app.use("/about",express.static("./README.md"));
+app.use("/about", express.static("./README.md"));
 app.use(bodyParser.json());
+loadBackEnd(app);
 
 
 app.get('/cool', (req, res) => {
@@ -47,8 +51,8 @@ app.get('/samples/FJGM', (req, res) => {
 let PMG = require("./samples/PMG/index.js");
 
 app.get('/samples/PMG', async (req, res) => {
-  const resultado = await PMG(); 
-  
+  const resultado = await PMG();
+
   // Ejemplo: mostramos la media si hubo éxito, o el mensaje si falló
   res.send(`<html><body><h1>
             ${resultado.exito ? `La media es: ${resultado.media}` : resultado.mensaje}
@@ -62,9 +66,9 @@ app.get('/samples/PMG', async (req, res) => {
 
 
 let picantes = require('./samples/AAP/lectorCSV.js');
-let listaPicante =[];
+let listaPicante = [];
 
-app.get(BASE_URL_API+"/spice-stats", (req, res) =>{
+app.get(BASE_URL_API + "/spice-stats", (req, res) => {
   res.send(JSON.stringify(listaPicante, null, 2));
   console.log(`Data to be sent: ${JSON.stringify(listaPicante, null)}`);
 });
@@ -74,9 +78,10 @@ app.get(BASE_URL_API+"/spice-stats", (req, res) =>{
 app.get(BASE_URL_API + "/spice-stats/loadInitialData", async (req, res) => {
   try {
     if (listaPicante.length > 0) {
-      return res.status(409).send({ 
-        message: "Los datos ya estaban cargados", 
-        loaded: listaPicante.length }); 
+      return res.status(409).send({
+        message: "Los datos ya estaban cargados",
+        loaded: listaPicante.length
+      });
     }
     const datos = await picantes();   // leer CSV
     listaPicante = datos.slice(0, 10); // guardar solo 10 registros
@@ -204,7 +209,7 @@ app.post(BASE_URL_API + "/spice-stats/:index", (req, res) => {
   });
 });
 
-app.put(BASE_URL_API+"/spice-stats", (req, res) => {
+app.put(BASE_URL_API + "/spice-stats", (req, res) => {
   res.status(405).send({
     message: "Método no permitido"
   })
@@ -216,17 +221,18 @@ app.put(BASE_URL_API+"/spice-stats", (req, res) => {
 let wool = require('./samples/FJGM/lectorCSV.js');
 let listaWool = [];
 
-app.get(BASE_URL_API+"/wool-stats", async (req, res) =>{
+app.get(BASE_URL_API + "/wool-stats", async (req, res) => {
   res.send(JSON.stringify(listaWool, null, 2));
   console.log(`Data to be sent: ${JSON.stringify(listaWool, null)}`)
 });
 
 app.get(BASE_URL_API + "/wool-stats/loadInitialData", async (req, res) => {
-      if (listaWool.length > 0) {
-      return res.status(409).send({ 
-        message: "Los datos ya estaban cargados", 
-        loaded: listaWool.length }); 
-    }
+  if (listaWool.length > 0) {
+    return res.status(409).send({
+      message: "Los datos ya estaban cargados",
+      loaded: listaWool.length
+    });
+  }
   try {
     const datos = await wool();   // leer CSV
     listaWool = datos.slice(0, 10); // guardar solo 10 registros
@@ -244,7 +250,7 @@ app.get(BASE_URL_API + "/wool-stats/loadInitialData", async (req, res) => {
 });
 
 
-app.post(BASE_URL_API+"/wool-stats", (req, res) =>{
+app.post(BASE_URL_API + "/wool-stats", (req, res) => {
   let newWool = req.body;
   console.log(`Data is: ${JSON.stringify(newWool, null, 2)}`)
   listaWool.push(newWool);
@@ -305,17 +311,18 @@ app.post(BASE_URL_API + "/wool-stats/:index", (req, res) => {
 let coffee = require('./samples/PMG/lectorCSV.js');
 let listaCoffee = [];
 
-app.get(BASE_URL_API+"/coffee-stats", async (req, res) =>{
+app.get(BASE_URL_API + "/coffee-stats", async (req, res) => {
   res.send(JSON.stringify(listaCoffee, null, 2));
   console.log(`Data to be sent: ${JSON.stringify(listaCoffee, null)}`)
 });
 
 app.get(BASE_URL_API + "/coffee-stats/loadInitialData", async (req, res) => {
-      if (listaCoffee.length > 0) {
-      return res.status(409).send({ 
-        message: "Los datos ya estaban cargados", 
-        loaded: listaCoffee.length }); 
-    }
+  if (listaCoffee.length > 0) {
+    return res.status(409).send({
+      message: "Los datos ya estaban cargados",
+      loaded: listaCoffee.length
+    });
+  }
   try {
     const datos = await coffee();   // leer CSV
     listaCoffee = datos.slice(0, 10); // guardar solo 10 registros
@@ -333,7 +340,7 @@ app.get(BASE_URL_API + "/coffee-stats/loadInitialData", async (req, res) => {
 });
 
 
-app.post(BASE_URL_API+"/coffee-stats", (req, res) =>{
+app.post(BASE_URL_API + "/coffee-stats", (req, res) => {
   let newCoffee = req.body;
   console.log(`Data is: ${JSON.stringify(newCoffee, null, 2)}`)
   listaCoffee.push(newCoffee);
