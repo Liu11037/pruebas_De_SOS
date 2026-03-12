@@ -86,17 +86,25 @@ function loadBackendAAP(app) {
         }
 
         // Evitar duplicados: por ejemplo, misma combinación área + item + año
-        const exists = listaPicante.some(e =>
-            e.area === newSpice.area &&
-            e.item === newSpice.item &&
-            e.year === newSpice.year
-        );
+        // const exists = listaPicante.some(e =>
+        //     e.area === newSpice.area &&
+        //     e.item === newSpice.item &&
+        //     e.year === newSpice.year
+        // );
 
-        if (exists) {
-            return res.status(409).json({
-                error: "El recurso ya existe (duplicado)"
-            });
-        }
+        // if (exists) {
+        //     return res.status(409).json({
+        //         error: "El recurso ya existe (duplicado)"
+        //     });
+        // }
+
+        db.find({area: newSpice.area, item: newSpice.item, year: newSpice.year}, (err, listaPicante) => {
+            if(listaPicante.length > 0){
+                res.sendStatus(409).json({
+                    error: "El recurso ya existe (duplicado)"
+                })
+            }
+        });
 
         // Insertar en la lista
         db.insert(newSpice);
