@@ -1,16 +1,24 @@
 import { leerCSV } from "./lectorCSV.js";
+import dataStore from 'nedb';
+
 let BASE_URL_API = "/api/v1";
+let db = new dataStore();       //Variable con la base de datos
 
 function loadBackendAAP(app) {
 
     // let picantes = require('./samples/AAP/lectorCSV.js');
-    let listaPicante = []; 
+    let listaPicante = [];
+
+    db.insert(listaPicante);
 
 
 
     app.get(BASE_URL_API + "/spice-stats", (req, res) => {
-        res.send(JSON.stringify(listaPicante, null, 2));
-        console.log(`Data to be sent: ${JSON.stringify(listaPicante, null)}`);
+        db.find({}, (err, listaPicante) => {
+            let jsonDataPicantes = JSON.stringify(listaPicante, null, 2);
+            console.log(`Data to be sent: ${jsonDataPicantes}`);
+            res.send(jsonDataPicantes);
+        });
     });
 
     app.get(BASE_URL_API + "/spice-stats/loadInitialData", async (req, res) => {
@@ -54,7 +62,7 @@ function loadBackendAAP(app) {
     });
 
 
-    
+
     app.post(BASE_URL_API + "/spice-stats", (req, res) => {
         const newSpice = req.body;
 
@@ -104,7 +112,7 @@ function loadBackendAAP(app) {
     });
 
 
-    
+
     app.put(BASE_URL_API + "/spice-stats/:index", (req, res) => {
         const index = parseInt(req.params.index);
         const updatedSpice = req.body;
@@ -160,7 +168,7 @@ function loadBackendAAP(app) {
     })
 
 
-    
+
     app.delete(BASE_URL_API + "/spice-stats", (req, res) => {
         listaPicante = []; // vaciar lista
 
