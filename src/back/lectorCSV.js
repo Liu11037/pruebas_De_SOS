@@ -1,5 +1,8 @@
-const csv = require('csv-parser');
-const fs = require('fs');
+// const csv = require('csv-parser');
+// const fs = require('fs');
+
+import csv from 'csv-parser';
+import fs from 'fs';
 
 function normalizarClave(clave) {
   return clave
@@ -15,11 +18,11 @@ function convertirValor(valor) {
   return isNaN(num) ? valor : num;
 }
 
-function leerCSV() {
+function leerCSV(dir) {
   return new Promise((resolve, reject) => {
     const resultados = [];
 
-    fs.createReadStream('datoscsv/consumo_picante.csv')
+    fs.createReadStream(dir)
       .pipe(csv({
         mapHeaders: ({ header }) => normalizarClave(header),
         mapValues: ({ value }) => convertirValor(value)
@@ -30,4 +33,5 @@ function leerCSV() {
   });
 }
 
-module.exports = leerCSV;
+// module.exports = leerCSV;
+export { leerCSV };
