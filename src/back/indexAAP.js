@@ -15,7 +15,9 @@ function loadBackendAAP(app) {
 
     app.get(BASE_URL_API + "/spice-stats", (req, res) => {
         db.find({}, (err, listaPicante) => {
-            let jsonDataPicantes = JSON.stringify(listaPicante, null, 2);
+            let jsonDataPicantes = JSON.stringify(listaPicante.map((c) => {
+                delete c._id; return c;
+            }), null, 2);
             console.log(`Data to be sent: ${jsonDataPicantes}`);
             res.send(jsonDataPicantes);
         });
