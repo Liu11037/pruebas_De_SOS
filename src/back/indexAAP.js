@@ -97,7 +97,7 @@ function loadBackendAAP(app) {
         }
 
         // Insertar en la lista
-        listaPicante.push(newSpice);
+        db.insert(newSpice);
 
         return res.status(201).json({
             message: "Recurso creado correctamente",
